@@ -4,6 +4,9 @@ from json import dumps
 from uuid import uuid1
 from kafka import KafkaProducer
 
+from mongo import coll_task
+from config import task_status
+
 TOPIC_NAME = 'housing-prediction-events'
 
 features_one = [0.00632,18,2.31,0,0.538,6.575,65.2,4.09,1,296,15.3,396.9,4.98]
@@ -36,5 +39,14 @@ producer = KafkaProducer(
     bootstrap_servers=['localhost:9092'],
     value_serializer=lambda x: dumps(x).encode('utf-8'))
 
-producer.send(TOPIC_NAME, value=data)
-sleep(1)
+def send_batch(data):
+    producer.send(TOPIC_NAME, value=data)
+    # save task in mongo
+    data['status'] = task_status.TASK_PENDING
+    coll_task.insert_one(data)
+    # sleep(1)
+    producer.flush()
+
+
+if __name__ == '__main__':
+    send_batch(data)

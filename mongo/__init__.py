@@ -13,6 +13,7 @@ try:
     # print(client.server_info())
     db = client[DATABASE]
     coll_housing = db[COLLECTION]
-    coll_task = 
-except Exception:
+    coll_task = db['task']
+except Exception as e:
+    print(e)
     print("Unable to connect to the server.")
