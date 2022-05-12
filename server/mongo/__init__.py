@@ -7,11 +7,12 @@ DATABASE = "bigdata_housing"
 COLLECTION = "housing"
 
 db = None
-Coll_housing = None
+coll_housing = None
 
 try:
     # print(client.server_info())
     db = client[DATABASE]
-    Coll_housing = db[COLLECTION]
+    coll_housing = db[COLLECTION]
+    coll_task = 
 except Exception:
     print("Unable to connect to the server.")

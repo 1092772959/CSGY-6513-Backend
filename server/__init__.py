@@ -1,15 +1,15 @@
 from flask import Flask
 from flask import request
 
-from server.mongo import Coll_housing
-from server.linear_reg_predict import LinearRegServing
+from server.mongo import coll_housing
+from model.linear_reg_predict import LinearRegServing
 
 def create_app(test_config=None):
     app = Flask(__name__)
 
     ATTR_LABELS = ['crim', 'zn', 'indus', 'chas', 'nox', 'rm', 'age', 'dis', 'rad', 'tax', 'ptratio', 'b', 'lstat']
 
-    linear_reg_srv = LinearRegServing('./server/model/linearReg.model')
+    linear_reg_srv = LinearRegServing('./model/linearReg.model')
 
     def resp_missing_feat():
         resp = {
@@ -40,7 +40,7 @@ def create_app(test_config=None):
     @app.route("/housing/<id>", methods=["GET"])
     def get_housing_by_id(id):
         print(id)
-        data = Coll_housing.find_one({"" : int(id)}, {"_id" : 0})
+        data = coll_housing.find_one({"" : int(id)}, {"_id" : 0})
         print(data)
         
         resp = {
