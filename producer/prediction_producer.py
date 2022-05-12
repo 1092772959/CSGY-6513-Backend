@@ -28,7 +28,6 @@ Data Format:
 '''
 
 data = {
-    'task_id': str(uuid1().int >> 64),
     'input_list': [
         features_one,
         features_two,
@@ -40,11 +39,20 @@ producer = KafkaProducer(
     value_serializer=lambda x: dumps(x).encode('utf-8'))
 
 def send_batch(data):
-    producer.send(TOPIC_NAME, value=data)
+    task_id = str(uuid1().int >> 64)
+    message = {
+        'task_id' : task_id,
+    }
+    task_doc = {
+        'task_id' : task_id,
+        'input_list' : data,
+        'status': task_status.TASK_PENDING,
+    }
+
     # save task in mongo
-    data['status'] = task_status.TASK_PENDING
-    coll_task.insert_one(data)
-    # sleep(1)
+    coll_task.insert_one(task_doc)
+    
+    producer.send(TOPIC_NAME, value=message)
     producer.flush()
 
 

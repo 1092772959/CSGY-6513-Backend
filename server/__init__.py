@@ -57,11 +57,7 @@ def create_app(test_config=None):
                 n_row.append(float(item))
             data.append(n_row)
         
-        task = {
-            'task_id': str(uuid1().int >> 64),
-            'input_list': data,
-        }
-        send_batch(task)
+        send_batch(data)
         
         return {
             "code": 0,
@@ -134,10 +130,5 @@ def create_app(test_config=None):
             "data": data,
         }
         return resp
-
-
-    @app.route("/")
-    def hello_world():
-        return "<p>Hello, World!</p>"
 
     return app

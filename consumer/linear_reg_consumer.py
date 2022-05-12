@@ -17,12 +17,21 @@ consumer = KafkaConsumer(
     enable_auto_commit=True,
     value_deserializer=lambda x: loads(x.decode('utf-8')))
 
-for message in consumer:
-    task = message.value
-    task_id = task['task_id']
+def handle_task(task_id):
     print('Received task: {}'.format(task_id))
     print('Start predicting...')
-    batch_input = task['input_list']
+    
+    task_record = coll_task.find_one({'task_id' : task_id})
+    batch_input = task_record['input_list']
+
+    #update status to predicting
+    coll_task.update_one({'task_id' : task_id}, {
+        "$set": {
+            'status': task_status.TASK_PREDICTING,
+        }
+    })
+
+    # batch_input = task['input_list']
     df_ret = linear_reg_srv.predict_batch(batch_input)
     
     predictions = df_ret['prediction'].values.tolist()
@@ -30,9 +39,6 @@ for message in consumer:
     print('Prediction finished.')
     
     # update task record in mongo
-    task_record = coll_task.find_one({'task_id' : task_id})
-    task_record['status'] = task_status.TASK_SUCCEED
-    task_record['predictions'] = predictions
 
     coll_task.update_one({'task_id' : task_id}, { 
         "$set": {
@@ -40,7 +46,20 @@ for message in consumer:
             'predictions': predictions,
         }
     })
-    print('Update task finished.')
+    print('Batch prediction succeeds.')
 
+for message in consumer:
+    task = message.value
+    task_id = task['task_id']
+    try:
+        handle_task(task_id)
+    except Exception as e:
+        print(e)
+        coll_task.update_one({'task_id' : task_id}, {
+        "$set": {
+            'status': task_status.TASK_ABORT,
+        }
+    })
+    
     
     
