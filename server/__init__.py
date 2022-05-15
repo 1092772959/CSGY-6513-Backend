@@ -33,9 +33,10 @@ def create_app(test_config=None):
             if attr not in form.keys():
                 resp = resp_missing_feat()
                 return resp
+            # print(attr + ": " + form.get(attr))
             feat.append(float(form.get(attr)))
         
-        print(feat)
+        # print(feat)
         ret = linear_reg_srv.predict(feat)
         resp = {
             "code": 0,
